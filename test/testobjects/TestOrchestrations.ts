@@ -181,6 +181,14 @@ export class TestOrchestrations {
         return output;
     });
 
+    public static SayHelloWithActivityRetryFanout: any = df.orchestrator(function*(context: any) {
+        const tasks = [];
+        const retryOptions = new df.RetryOptions(100, 5);
+        tasks.push(context.df.callActivityWithRetry("Hello", retryOptions, "Tokyo"));
+        tasks.push(context.df.callActivityWithRetry("Hello", retryOptions, "Seattle"));
+        return yield context.df.Task.all(tasks);
+    });
+
     public static SayHelloWithActivityRetryNoOptions: any = df.orchestrator(function*(context: any) {
         const output = yield context.df.callActivityWithRetry("Hello", undefined, "World");
         return output;
@@ -229,6 +237,14 @@ export class TestOrchestrations {
         const retryOptions = new df.RetryOptions(10000, 2);
         const output = yield context.df.callSubOrchestratorWithRetry("SayHelloInline", retryOptions, input, childId);
         return output;
+    });
+
+    public static SayHelloWithSubOrchestratorRetryFanout: any = df.orchestrator(function*(context: any) {
+        const retryOptions = new df.RetryOptions(100, 5);
+        const output = [];
+        output.push(context.df.callSubOrchestratorWithRetry("SayHelloInline", retryOptions, "Tokyo"));
+        output.push(context.df.callSubOrchestratorWithRetry("SayHelloInline", retryOptions, "Seattle"));
+        return yield context.df.Task.all(output);
     });
 
     public static SayHelloWithSubOrchestratorRetryNoOptions: any = df.orchestrator(function*(context: any) {
